@@ -28,6 +28,11 @@ jobs:
           cd terraform
           terraform init
 
+      - name: Terraform destroy
+        run: |
+          cd terraform
+          terraform destroy -target aws_security_group.web_sg
+        
 
       - name: Terraform Apply
         run: |
