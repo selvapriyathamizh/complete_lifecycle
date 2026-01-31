@@ -27,10 +27,7 @@ jobs:
         run: |
           cd terraform
           terraform init
-      - name: Terraform Init
-        run: |
-          cd terraform 
-          terraform destroy -auto-approve
+
 
       - name: Terraform Apply
         run: |
