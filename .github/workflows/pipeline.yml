@@ -28,7 +28,44 @@ jobs:
           cd terraform
           terraform init
 
-      - name: Terraform destroy
+
+      - name: Terraform Apply
         run: |
           cd terraform
-          terraform destroy
+          terraform apply -auto-approve \
+            -var="key_name=my-ec2-key"
+
+      - name: Capture EC2 IP
+        id: output_ip
+        run: |
+          cd terraform
+          echo "ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
+
+          
+  configure:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install ansible -y
+          
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ needs.terraform.outputs.ec2_ip }} >> ~/.ssh/known_hosts
+
+      - name: Create inventory
+        run: |
+          echo "[web]" > inventory
+          echo "${{ needs.terraform.outputs.ec2_ip }}" >> inventory
+
+      - name: Run Ansible
+        run: |
+          ansible-playbook ansible/playbook.yml -i inventory \
+          -u ec2-user --ssh-extra-args='-o StrictHostKeyChecking=no'
