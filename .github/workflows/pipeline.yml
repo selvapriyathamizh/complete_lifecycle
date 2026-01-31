@@ -1,0 +1,53 @@
+name: Infra Lifecycle Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    outputs:
+      ec2_ip: ${{ steps.output_ip.outputs.ip }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve
+
+      - name: Capture EC2 IP
+        id: output_ip
+        run: |
+          cd terraform
+          echo "ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
+
+  configure:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install ansible -y
+
+      - name: Create inventory
+        run: |
+          echo "[web]" > inventory
+          echo "${{ needs.terraform.outputs.ec2_ip }}" >> inventory
+
+      - name: Run Ansible
+        run: |
+          ansible-playbook ansible/playbook.yml -i inventory \
+          -u ec2-user --ssh-extra-args='-o StrictHostKeyChecking=no'
