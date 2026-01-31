@@ -29,7 +29,7 @@ resource "aws_security_group" "web_sg1" {
 
 resource "aws_instance" "web" {
   ami           = "ami-03ea746da1a2e36e7"   # Amazon Linux 2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
   key_name      = var.key_name
   security_groups = [aws_security_group.web_sg1.name]
 
