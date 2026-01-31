@@ -1,0 +1,15 @@
+- name: Install nginx
+  yum:
+    name: nginx
+    state: present
+
+- name: Enable and start nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Validate nginx is reachable
+  uri:
+    url: http://localhost
+    status_code: 200
