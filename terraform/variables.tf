@@ -12,6 +12,6 @@ variable "key_name" {
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
-  default     = "eu-west-2"
+  default     = "us-east-2"
 }
 
