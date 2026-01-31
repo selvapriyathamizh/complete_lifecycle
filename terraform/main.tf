@@ -2,8 +2,8 @@ provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_security_group" "web_sg" {
-  name = "web-sg"
+resource "aws_security_group" "web_sg1" {
+  name = "web-sg1"
 
   ingress {
     from_port   = 22
@@ -31,7 +31,7 @@ resource "aws_instance" "web" {
   ami           = "ami-03ea746da1a2e36e7"   # Amazon Linux 2
   instance_type = "t2.micro"
   key_name      = var.key_name
-  security_groups = [aws_security_group.web_sg.name]
+  security_groups = [aws_security_group.web_sg1.name]
 
   tags = {
     Name = "ci-cd-demo"
